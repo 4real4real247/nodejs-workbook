@@ -13,6 +13,9 @@
 const inputString = "Javascript Rocks!";
 let reversedString = "";
 
-// Your code here
+//loop form the end of the string to the beginning
+for (let i = inputString.length - 1; i >= 0; i--) {
+  reversedString += inputString[i];
+}
 
 console.log(reversedString);

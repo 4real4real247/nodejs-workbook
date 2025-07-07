@@ -1,5 +1,10 @@
 // Run this file with the node command:
 // node index.js
 
-const myName = "Laura"; // Change this name
-console.log(`Hello ${myName}! Welcome to Node.js!`);
+const myName = process.argv[2];
+if (myName) {
+  console.log(`Greetings, ${myName}!`);
+} else {
+  // Change this name
+  console.log(`Hello, world`);
+}
