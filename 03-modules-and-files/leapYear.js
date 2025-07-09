@@ -9,3 +9,32 @@ REQUIREMENTS:
     - "2024 is a leap year!"
     - "1979 is not a leap year!"
 */
+import moment from moment
+
+const moment = require('moment');
+
+// Function to check if a year is a leap year
+function checkLeapYear(year) {
+  const m = moment([year]);
+  if (m.isLeapYear()) {
+    console.log(`${year} is a leap year!`);
+  } else {
+    console.log(`${year} is not a leap year!`);
+  }
+}
+
+// Accept user input from the command line
+const readline = require('readline').createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+readline.question('Enter a year: ', input => {
+  const year = parseInt(input);
+  if (!isNaN(year)) {
+    checkLeapYear(year);
+  } else {
+    console.log('Invalid input. Please enter a valid year.');
+  }
+  readline.close();
+});
