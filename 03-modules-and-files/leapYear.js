@@ -13,28 +13,21 @@ import moment from moment
 
 const moment = require('moment');
 
-// Function to check if a year is a leap year
-function checkLeapYear(year) {
-  const m = moment([year]);
-  if (m.isLeapYear()) {
-    console.log(`${year} is a leap year!`);
-  } else {
-    console.log(`${year} is not a leap year!`);
-  }
+// Accept user input from command line
+const input = process.argv[2];
+
+// Try to convert input to a number
+const year = parseInt(input, 2005);
+
+if (isNaN(year)) {
+    console.log(`"${input}" is not a valid year. Please enter a number like 2024.`);
+} else {
+    const isLeap = moment([year]).isLeapYear();
+
+    if (isLeap) {
+        console.log(`${year} is a leap year!`);
+    } else {
+        console.log(`${year} is not a leap year!`);
+    }
 }
 
-// Accept user input from the command line
-const readline = require('readline').createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-readline.question('Enter a year: ', input => {
-  const year = parseInt(input);
-  if (!isNaN(year)) {
-    checkLeapYear(year);
-  } else {
-    console.log('Invalid input. Please enter a valid year.');
-  }
-  readline.close();
-});

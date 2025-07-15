@@ -68,12 +68,13 @@ The data in `data.json` is an array of recipe objects. Each recipe is an object 
 
 Base URL: `https://localhost:3000`
 
-| Resource  | Method | Endpoint                                 | Description                          |
-| --------- | ------ | ---------------------------------------- | ------------------------------------ |
-| `recipes` | GET    | /get-all-recipes                         | Retrieves all recipes                |
-| `recipes` | GET    | /get-one-recipe/:index                   | Retrieves one recipe by its index    |
-| `recipes` | GET    | /delete-one-recipe/:index                | Deletes a recipe by its index        |
-| `recipes` | GET    | /update-one-recipe-name/:index/:newTitle | Updates a recipe's name by its index |
+| Resource                             | Method | Endpoint                  | Description                       |
+| ------------------------------------ | ------ | ------------------------- | --------------------------------- |
+| `recipes`                            | GET    | /get-all-recipes          | Retrieves all recipes             |
+| `recipes`                            | GET    | /get-one-recipe/:index    | Retrieves one recipe by its index |
+| `recipes`                            | GET    | /delete-one-recipe/:index | Deletes a recipe by its index     |
+| `recipes`                            | GET    |
+| Updates a recipe's name by its index |
 
 ---
 
