@@ -1,27 +1,32 @@
-// Animals API
-
 // ---------------------------------
 // Boilerplate Code to Set Up Server
 // ---------------------------------
 
-// Importing our Node modules
-import express from "express"; // The framework that lets us easily build a web server
-import pg from "pg"; // pg stands for PostgreSQL, for talking to the database
-import config from "./config.js"; // we need access to our database connection credentials
+// Load the Express framework to handle web server functions
+import express from "express";
 
-// connect to our PostgreSQL database, or db for short
+// Load pg module to connect with the PostgreSQL database
+import pg from "pg";
+
+// Load configuration values (like database credentials) from an external file
+import config from "./config.js";
+
+// Create a connection pool to the PostgreSQL database using credentials from config
 const db = new pg.Pool({
-  connectionString: config.databaseUrl, // credentials to access the database — keep this private!
-  ssl: true, // we will use SSL encryption when connecting to the database
+  connectionString: config.databaseUrl, // The address and password for the database
+  ssl: true, // Use secure encrypted connection
 });
 
-const app = express(); // Creating an instance of the express module
+// Initialize an Express application (your web server)
+const app = express();
 
-app.use(express.json()); // This server will receive and respond in JSON format
+// This ensures incoming and outgoing data is in JSON format
+app.use(express.json());
 
-const port = 3000; // Declaring which port to listen to to receive requests
+// Choose a port for the server to listen on
+const port = 3000;
 
-// Turning on our server to listen for requests
+// Start the server and log a message to indicate it's running
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
@@ -30,84 +35,78 @@ app.listen(port, () => {
 // Helper Functions
 // ---------------------------------
 
-// Helper function for /get-all-animals
-
+// Fetch all animals from the database
 async function getAllAnimals() {
-  const result = await db.query("SELECT * FROM animals");
-  console.log(result);
-  return result.rows;
+  const result = await db.query("SELECT * FROM animals"); // Run SQL query
+  console.log(result); // Log the full result to the console
+  return result.rows; // Return just the rows (actual data)
 }
 
-// Helper function for /get-one-animal/:name
+// Fetch a single animal by name
 async function getOneAnimal(animalName) {
   const result = await db.query("SELECT * FROM animals WHERE name = $1", [
-    animalName,
+    animalName, // Use parameterized query to avoid SQL injection
   ]);
-  return result.rows[0];
+  return result.rows[0]; // Return just the first matching row
 }
 
-// Helper function for /delete-one-animal/:name
+// Delete an animal by name
 async function deleteOneAnimal(animalName) {
   await db.query("DELETE FROM animals WHERE name = $1", [animalName]);
 }
 
-// Helper function for /add-one-animal
-
+// Add a new animal record to the database
 async function addOneAnimal(animal) {
-  console.log(animal, "this is the one");
+  console.log(animal, "this is the one"); // Debug log of incoming data
   await db.query(
     "INSERT INTO animals (name, category, can_fly, lives_in) VALUES ($1, $2, $3, $4)",
-    [animal.name, animal.category, animal.can_fly, animal.lives_in]
+    [animal.name, animal.category, animal.can_fly, animal.lives_in] // Insert new values
   );
 }
 
-// Helper function for /update-one-animal
+// Update an existing animal's details
 async function updateOneAnimal(animal) {
   await db.query(
     "UPDATE animals SET category = $1, can_fly = $2, lives_in = $3 WHERE name = $4",
-    [animal.category, animal.can_fly, animal.lives_in, animal.name]
+    [animal.category, animal.can_fly, animal.lives_in, animal.name] // Update values based on name match
   );
 }
+
 // ---------------------------------
 // API Endpoints
 // ---------------------------------
 
-// GET /get-all-animals
+// Endpoint to get all animals
 app.get("/get-all-animals", async (req, res) => {
-  const allAnimals = await getAllAnimals();
-  // res.send(JSON.stringify(allAnimals));
-  res.json(allAnimals);
+  const allAnimals = await getAllAnimals(); // Call helper function
+  res.json(allAnimals); // Send JSON response with all animal records
 });
 
-// both functions res.send() and res.json() send a response
-// res.send() sends a response as a String
-// res.json() sends a response as a JSON object
-
-// GET /get-one-animal/:name
+// Endpoint to get one animal by name
 app.get("/get-one-animal/:name", async (req, res) => {
-  const animalName = req.params.name;
-  const animal = await getOneAnimal(animalName);
-  console.log(animal, "this is the animal");
-  res.json(animal);
+  const animalName = req.params.name; // Read the name from the URL path
+  const animal = await getOneAnimal(animalName); // Call helper function
+  console.log(animal, "this is the animal"); // Debug output
+  res.json(animal); // Send the animal info as JSON
 });
 
-// GET /delete-one-animal/:name
+// Endpoint to delete one animal by name
 app.get("/delete-one-animal/:name", async (req, res) => {
-  const animalName = req.params.name;
-  await deleteOneAnimal(animalName);
-  res.send("The animal was successfully deleted!");
+  const animalName = req.params.name; // Read the name from the URL path
+  await deleteOneAnimal(animalName); // Call helper function
+  res.send("The animal was successfully deleted!"); // Respond with a success message
 });
 
-// POST /add-one-animal
+// Endpoint to add a new animal (POST request with JSON body)
 app.post("/add-one-animal", async (req, res) => {
-  const newAnimal = req.body;
-  await addOneAnimal(newAnimal);
-  res.send("The animal was successfully added!");
+  const newAnimal = req.body; // Get the animal data from the request body
+  await addOneAnimal(newAnimal); // Add the animal to the database
+  res.send("The animal was successfully added!"); // Respond with a success message
 });
 
-// POST /update-one-animal
+// Endpoint to update an existing animal (POST request with JSON body)
 app.post("/update-one-animal", async (req, res) => {
-  const updateAnimal = req.body;
-  await updateOneAnimal(updateAnimal);
-  res.send("The animal was successfully updated!");
+  const updateAnimal = req.body; // Get updated data from the request body
+  await updateOneAnimal(updateAnimal); // Update the animal in the database
+  res.send("The animal was successfully updated!"); // Respond with a success message
 });
