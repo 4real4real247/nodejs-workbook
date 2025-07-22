@@ -6,6 +6,14 @@
 
 // Importing our Node modules
 import express from "express"; // The framework that lets us easily build a web server
+import pg from "pg"; // pg stands for PostgreSQL, for talking to the database
+import config from "./config.js"; // we need access to our database connection credentials
+
+// connect to our PostgreSQL database, or db for short
+const db = new pg.Pool({
+  connectionString: config.databaseUrl, // credentials to access the database — keep this private!
+  ssl: true, // we will use SSL encryption when connecting to the database
+});
 
 const app = express(); // Creating an instance of the express module
 
@@ -24,24 +32,82 @@ app.listen(port, () => {
 
 // Helper function for /get-all-animals
 
+async function getAllAnimals() {
+  const result = await db.query("SELECT * FROM animals");
+  console.log(result);
+  return result.rows;
+}
+
 // Helper function for /get-one-animal/:name
+async function getOneAnimal(animalName) {
+  const result = await db.query("SELECT * FROM animals WHERE name = $1", [
+    animalName,
+  ]);
+  return result.rows[0];
+}
 
 // Helper function for /delete-one-animal/:name
+async function deleteOneAnimal(animalName) {
+  await db.query("DELETE FROM animals WHERE name = $1", [animalName]);
+}
 
 // Helper function for /add-one-animal
 
-// Helper function for /update-one-animal
+async function addOneAnimal(animal) {
+  console.log(animal, "this is the one");
+  await db.query(
+    "INSERT INTO animals (name, category, can_fly, lives_in) VALUES ($1, $2, $3, $4)",
+    [animal.name, animal.category, animal.can_fly, animal.lives_in]
+  );
+}
 
+// Helper function for /update-one-animal
+async function updateOneAnimal(animal) {
+  await db.query(
+    "UPDATE animals SET category = $1, can_fly = $2, lives_in = $3 WHERE name = $4",
+    [animal.category, animal.can_fly, animal.lives_in, animal.name]
+  );
+}
 // ---------------------------------
 // API Endpoints
 // ---------------------------------
 
 // GET /get-all-animals
+app.get("/get-all-animals", async (req, res) => {
+  const allAnimals = await getAllAnimals();
+  // res.send(JSON.stringify(allAnimals));
+  res.json(allAnimals);
+});
+
+// both functions res.send() and res.json() send a response
+// res.send() sends a response as a String
+// res.json() sends a response as a JSON object
 
 // GET /get-one-animal/:name
+app.get("/get-one-animal/:name", async (req, res) => {
+  const animalName = req.params.name;
+  const animal = await getOneAnimal(animalName);
+  console.log(animal, "this is the animal");
+  res.json(animal);
+});
 
 // GET /delete-one-animal/:name
+app.get("/delete-one-animal/:name", async (req, res) => {
+  const animalName = req.params.name;
+  await deleteOneAnimal(animalName);
+  res.send("The animal was successfully deleted!");
+});
 
 // POST /add-one-animal
+app.post("/add-one-animal", async (req, res) => {
+  const newAnimal = req.body;
+  await addOneAnimal(newAnimal);
+  res.send("The animal was successfully added!");
+});
 
 // POST /update-one-animal
+app.post("/update-one-animal", async (req, res) => {
+  const updateAnimal = req.body;
+  await updateOneAnimal(updateAnimal);
+  res.send("The animal was successfully updated!");
+});
