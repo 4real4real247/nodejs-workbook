@@ -1,77 +1,69 @@
-// Write your Recipe CRUD App code here!
-
 // ---------------------------------
 // Boilerplate Code to Set Up Server
 // ---------------------------------
-import express from "express"; // the framework we use to build a web server
-import fs from "fs/promises"; // the File System module that lets us read files
 
-// Creating an instance of the express module so that we can use all of its superpowers, including its functions, properties, etc.
-const app = express();
+// Importing our Node modules
+import express from "express"; // The framework that lets us easily build a web server
+import pg from "pg"; // pg is the module that helps us talk to a PostgreSQL database
+import config from "./config.js"; // This file contains sensitive database credentials
+import fs from "fs/promises"; // Importing file system module to read data from JSON files
 
-// Define which port our server should listen to receive requests
-const port = 3000;
-
-// say that we're using JSON data type
-// Our server will receive data as JSON, and respond with JSON
-app.use(express.json());
-
-// run the function that turns on the server to listen for requests on the port
-app.listen(port, () => {
-  console.log(`My server is listening on port ${port}!`);
+// Create a connection pool to the PostgreSQL database
+const db = new pg.Pool({
+  connectionString: config.databaseUrl, // Use the database URL from config
+  ssl: true, // Use SSL to keep the database connection secure
 });
 
-// ==========================
-// Additional code starts here
-// ==========================
+// Create the Express server
+const app = express(); // Creating an instance of express
+
+// Allow our server to accept and send JSON-formatted data
+app.use(express.json());
+
+// Choose the port number the server should listen on
+const port = 3000;
+
+// Start the server and log a message to confirm it’s running
+app.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
+});
 
 // ---------------------------------
 // Helper Functions
 // ---------------------------------
-// Read the recipe data from data.json
-const readRecipes = async () => {
-  const rawData = await fs.readFile("./data.json", "utf8");
-  return JSON.parse(rawData);
-};
 
-// Write updated recipes back to data.json
-const writeRecipes = async (recipes) => {
-  await fs.writeFile("./data.json", JSON.stringify(recipes, null, 2), "utf8");
-};
+// Read all recipes from the local JSON file
+async function getAllRecipies() {
+  // Read the file 'data.json' that contains the recipe data
+  const data = await fs.readFile("../data.json", "utf8");
+  // Convert the string data into a JavaScript array/object
+  return JSON.parse(data);
+}
 
 // ---------------------------------
 // API Endpoints
 // ---------------------------------
 
-// TODO: API Endpoint for handling GET requests to /get-all-recipes
+// GET /get-all-recipes
+// This endpoint sends all recipes to the client
 app.get("/get-all-recipes", async (req, res) => {
-  const recipes = await readRecipes();
+  // Call our helper function to read all recipes from the file
+  const recipes = await getAllRecipies();
+  // Log to confirm it was called (for debugging)
+  console.log("Gotemmmmmm");
+  // Send back the recipes as a JSON response
   res.json(recipes);
 });
 
-// TODO: API Endpoint for handling GET requests to /get-one-recipe/:index
+// GET /get-one-recipe/:index
+// This endpoint sends back one recipe based on its index in the array
 app.get("/get-one-recipe/:index", async (req, res) => {
-  const recipes = await readRecipes();
+  // First, read the full list of recipes from the file
+  const recipes = await getAllRecipies();
+  // Convert the route parameter from a string to a number
   const index = Number(req.params.index);
+  // Get the recipe at the given index
   const recipe = recipes[index];
+  // Send it back as JSON
   res.json(recipe);
-});
-
-// TODO: API Endpoint for handling GET requests to /delete-one-recipe/:index
-app.get("/delete-one-recipe/:index", async (req, res) => {
-  const recipes = await readRecipes();
-  const index = Number(req.params.index);
-  const deletedRecipe = recipes.splice(index, 1)[0];
-  await writeRecipes(recipes);
-  res.json(deletedRecipe);
-});
-
-// TODO: API Endpoint for handling GET requests to /update-one-recipe-name/:index/:newName
-app.get("/update-one-recipe/:index/:newName", async (req, res) => {
-  const recipes = await readRecipes();
-  const index = Number(req.params.index);
-  const newName = req.params.newName;
-  recipes[index].name = newName;
-  await writeRecipes(recipes);
-  res.json(recipes[index]);
 });
